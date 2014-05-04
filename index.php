@@ -58,7 +58,7 @@ if(isUserLoggedIn()) {
     <meta name="author" content="">
     <link rel="shortcut icon" href="css/favicon.ico">
 
-    <title>Welcome to UserFrosting!</title>
+    <title>CommunityBuilder.io</title>
 
     <link rel="icon" type="image/x-icon" href="css/favicon.ico" />
     
@@ -85,21 +85,22 @@ if(isUserLoggedIn()) {
       <div class="header">
         <ul class="nav nav-pills navbar pull-right">
         </ul>
-        <h3 class="text-muted">UserFrosting</h3>
+        <h3 class="text-muted">CommunityBuilder.io</h3>
       </div>
       <div class="jumbotron">
-        <h1>Welcome to UserFrosting!</h1>
-        <p class="lead">A secure, modern user management system based on UserCake, jQuery, and Bootstrap.</p>
+        <h2>Welcome to CommunityBuilder.io</h2>
+        <p class="lead">We're building a web platform that understands capacity building and turning good ideas into sustainable organizations.</p>
+	<p> We're currently in private BETA with MVP with a limited number of users. Please signup below for announcements and opportunities to join our private beta.</p>
 		<div class="row">
 			<div class="col-sm-12">
-			  <a href="login.php" class="btn btn-success" role="button" value='Login'>Login</a>
+			  <a href="register.php" class="btn btn-success" role="button" value='Signup'>Signup</a>
 			</div>
         </div>
-        <div class="jumbotron-links">
+        <div class="jumbotron-links" style="font-size:12px; padding:0px;line-height:12px;">
         </div>
       </div>	
       <div class="footer">
-        <p>&copy; Your Website, 2014</p>
+        <p>&copy;<a href="http://www.soupala.com" target="_blank"> Soupala</a>, 2014</p>
       </div>
 
     </div> <!-- /container -->

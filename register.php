@@ -73,7 +73,7 @@ if(isUserLoggedIn()) {
     <meta name="author" content="">
     <link rel="shortcut icon" href="css/favicon.ico">
 
-    <title>UserFrosting - Register</title>
+    <title>CommunityBuilder.io - Register</title>
 
 	<link rel="icon" type="image/x-icon" href="css/favicon.ico" />
 	
@@ -100,11 +100,11 @@ if(isUserLoggedIn()) {
       <div class="header">
         <ul class="nav nav-pills navbar pull-right">
         </ul>
-        <h3 class="text-muted">UserFrosting</h3>
+        <h3 class="text-muted">CommunityBuilder.io</h3>
       </div>
       <div class="jumbotron">
-        <h1>Let's get started!</h1>
-        <p class="lead">Registration is fast and simple.</p>
+        <h2>We help turn grassroots efforts into sustainable organizations.</h2>
+        <p class="lead">Sign Up for Beta!</p>
 		<form name='newUser' class='form-horizontal' role='form' action='user_create_user.php' method='post'>
 		  <div class="row">
 				<div id='display-alerts' class="col-lg-12">
@@ -117,12 +117,12 @@ if(isUserLoggedIn()) {
 			  <input type="text" class="form-control" placeholder="User Name" name = 'username' value=''>
 			</div>
 		  </div>
-		  <div class="row form-group">
+		 <!-- <div class="row form-group">
 			<label class="col-sm-4 control-label">Display Name</label>
 			<div class="col-sm-8">
 			  <input type="text" class="form-control" placeholder="Display Name" name='displayname'>
 			</div>
-		  </div>
+		  </div> -->
 		  <div class="form-group">
 			<label class="col-sm-4 control-label">Email</label>
 			<div class="col-sm-8">
@@ -142,7 +142,7 @@ if(isUserLoggedIn()) {
 			</div>
 		  </div>
 		  <div class="form-group">
-			<label class="col-sm-4 control-label">Confirm Security Code</label>
+			<label class="col-sm-4 control-label">Enter CAPTCHA</label>
 			<div class="col-sm-4">
 			  <input type="text" class="form-control" name='captcha'>
 			</div>
@@ -159,7 +159,7 @@ if(isUserLoggedIn()) {
 		</form>
 	  </div>	
       <div class="footer">
-        <p>&copy; Your Website, 2014</p>
+        <p>&copy; Soupala, 2014</p>
       </div>
 
     </div> <!-- /container -->

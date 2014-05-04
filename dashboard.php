@@ -77,7 +77,7 @@ setReferralPage($_SERVER['PHP_SELF']);
             </ol>
             <div class="alert alert-success alert-dismissable">
               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-              Welcome to UserFrosting!  The back end account management system is derived from <a class="alert-link" href="http://usercake.com">UserCake 2.0.2</a>, while the dashboard and admin account features are based on the SB Admin Template by <a class="alert-link" href="http://startbootstrap.com">Start Bootstrap</a>. Other key frameworks and plugins used in this system are:
+              Welcome to CommunityBuilder.io!  This is a back end account management system derived from UserFrosting and <a class="alert-link" href="http://usercake.com">UserCake 2.0.2</a>, while the dashboard and admin account features are based on the SB Admin Template by <a class="alert-link" href="http://startbootstrap.com">Start Bootstrap</a>. Other key frameworks and plugins used in this system are:
               <br><a class="alert-link" href='http://http://jquery.com/'>jQuery 1.10.2</a>
               <br><a class="alert-link" href='http://getbootstrap.com/'>Twitter Bootstrap 3.0</a>
               <br><a class="alert-link" href='http://fontawesome.io/'>Font Awesome</a>
