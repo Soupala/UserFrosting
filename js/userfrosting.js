@@ -28,6 +28,25 @@ THE SOFTWARE.
 
 */
 
+var APIPATH = getSitePath() + "api/";
+var FORMSPATH = getSitePath() + "forms/";
+
+// Returns the base URL of the website, assuming that this script is in the '/js' subdirectory of the site.
+function getSitePath() {
+    var scripts = document.getElementsByTagName('script'),
+        script = scripts[scripts.length - 1];
+
+    if (script.getAttribute.length !== undefined) {
+		scriptPath = script.src;
+    }
+
+    scriptPath = script.getAttribute('src', -1);
+	
+	var basePath = scriptPath.substr(0, scriptPath.lastIndexOf( '/js' )+1 );
+	console.log("base site path is: " + basePath);
+	return basePath;
+}
+
 function getTemplateAjax(path) {
 	var source;
 	var template;
@@ -112,48 +131,75 @@ function toTitleCase(str) {
 	}
 }
 
+// Get the value of a URI parameter from the current page by name.
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+// Find an object in an array of objects that has the corresponding field value
+function findObjectByField(arr, field_value, field_name){
+	field_name = typeof field_name !== 'undefined' ? field_name : "id";
+	var item = null;
+	jQuery.each(arr, function (a,b){
+		if (b[field_name] == field_value){
+			item = b;
+		}
+	});
+	return item;
+};
+
+function getKeys(obj) {
+	var keys = [];
+	$.each( obj, function( key, value ) {
+		keys.push(key);
+	});
+	return keys;
+}
+
 // Create an old-fashion html style select dropdown with typeahead capability
-function presetDropdown(dialog_id, classLabel, suggestions, default_id, disabled) {
-	default_id = typeof default_id !== 'undefined' ? default_id : "";
-	disabled = typeof disabled !== 'undefined' ? disabled : false;
-	
-	var source = "<p>{{name}}</p>";
-	var template = Handlebars.compile(source);
+function typeaheadDropdown(typeahead_element, suggestions, suggestion_render_template, options) {
+	var default_id = false;
+	var disabled = false;
+	if (options['default_id'])
+		default_id = options['default_id'];
+	if (options['disabled'])
+		disabled = options['disabled'];
+
+	var template = Handlebars.compile(suggestion_render_template);
 	// Enable item
 	//jQuery.fn._typeahead.noConflict();
-	// Test array: var colors = ["red", "blue", "green", "yellow", "brown", "black"];     
-	$('#' + dialog_id + ' .' + classLabel).typeahead({
+	// Test array: var colors = ["red", "blue", "green", "yellow", "brown", "black"];    
+	$(typeahead_element).typeahead({
 		//name: classLabel,     // Update 2/19/2014: remove name to keep typeahead from caching data
 		minLength: 0,
 		limit: 100,
+        highlight: true,
 		local: suggestions,
 		template: template,
 		engine: Handlebars
 	}).on('typeahead:closed', function (object, datum) {
-		console.log("Typeahead updated.");
 		// Check to make sure that the inputted value is in the list of values.  If so, set the hidden -id field to the corresponding id
 		var found = false;
 		jQuery.each(suggestions, function(idx, item) {
 			// Match the item name against the suggestions list
-			console.log("Checking item " + item['name']);
-			if (item['name'].toLowerCase() == $('#' + dialog_id + ' .' + classLabel).val().toLowerCase())
+			if (item['name'].toLowerCase() == $(typeahead_element).val().toLowerCase())
 				found = item;
 		});
 		if (found ) {
 			// Set the selected hidden id and trigger the "change" event
 			var selected_id = found['id'];
-			console.log("FIRING TRIGGER: " + selected_id);
-			$('#' + dialog_id + ' .' + classLabel + '-id' ).val(selected_id).trigger('change');
-
+			$(typeahead_element).data("selected_id", selected_id).trigger('change');
 		} else {
-			$('#' + dialog_id + ' .' + classLabel).typeahead('setQuery', "");
-			console.log("Item not found in list.");
+			$(typeahead_element).typeahead('setQuery', "");
 		}
 
 	});
+
 	// Set default value if specified
 	if (default_id) {
-		console.log("Default value is " + default_id);
 		// Look for name
 		var found = false;
 		jQuery.each(suggestions, function(idx, item) {
@@ -164,19 +210,16 @@ function presetDropdown(dialog_id, classLabel, suggestions, default_id, disabled
 		if (found ) {
 			// Set the selected hidden id and trigger the "change" event
 			var selected_id = found['id'];
-			$('#' + dialog_id + ' .' + classLabel).typeahead('setQuery', found['name']);
-			console.log("FIRING TRIGGER: " + selected_id);
-			$('#' + dialog_id + ' .' + classLabel + '-id' ).val(selected_id).trigger('change');
+			$(typeahead_element).typeahead('setQuery', found['name']);
+			$(typeahead_element).data("selected_id", selected_id).trigger('change');
 		} else {
-			$('#' + dialog_id + ' .' + classLabel).typeahead('setQuery', "");
-			console.log("Item not found in list.");
+			$(typeahead_element).typeahead('setQuery', "");
 		}
 	}
 	// Disable if specified
 	if (disabled) {
-		console.log("Disabling typeahead.");
-		$('#' + dialog_id + ' .' + classLabel).typeahead('destroy');
-		$('#' + dialog_id + ' .' + classLabel).prop('disabled', true);
+		$(typeahead_element).typeahead('destroy');
+		$(typeahead_element).prop('disabled', true);
 	}
 }
 
@@ -285,12 +328,12 @@ function validateFormFields(dialog_id) {
 			closestGroup.addClass('has-success');
 		}		
 	});
-	console.log(errorMessages);
+	//console.log(errorMessages);
 	return errorMessages;
 }
 
 function loadCurrentUser() {
-	var url = 'load_current_user.php';
+	var url = APIPATH + 'load_current_user.php';
 	var result = $.ajax({  
 	  type: "GET",  
 	  url: url,
@@ -298,104 +341,54 @@ function loadCurrentUser() {
 	}).responseText;	
 	var resultJSON = processJSONResult(result);
 	
-	if (resultJSON['id']) {
+	if (resultJSON['user_id']) {
 		return resultJSON;
 	} else {
 		addAlert("danger", "We couldn't load your account. We'll try to get this fixed right away!");
-		window.location.replace('404.php');
+		window.location.replace('logout.php');
 		return;
 	}
 }
 
-function loadPermissions(div_id) {
-  var url = "load_permissions.php";
-  $.getJSON( url, {})
-  .done(function( data ) {		  
-	if (Object.keys(data).length > 0) { // Don't bother unless there are some records found
-	  jQuery.each(data, function(idx, record) {
-		$('#' + div_id).append("<li class='list-group-item'>" + record['name'] + 
-		"<button class='btn btn-sm btn-danger deletePermission pull-right' data-id='" + record['id'] + "'>Delete</button></li>");
-	  });
-	  
-	  // Bind delete buttons
-	  $('.deletePermission').on('click', function(){
-		var btn = $(this);
-		var id = btn.data('id');
-		deletePermission(id);
-	  });
-	}
-  });
-}
-
-function addNewPermission(permission_name) {
-  var url = 'create_permission.php';
-  $.ajax({  
-	type: "POST",  
-	url: url,  
-	data: {
-	  new_permission:		permission_name,
-	  ajaxMode:				"true"
-	}		  
-  }).done( function(result) {
-	var resultJSON = processJSONResult(result);
-	alertWidget('display-alerts');
-	if (resultJSON['errors'] == 0) {
-		// If no errors, reload the newly added permission as a new element in the list
-		$('#permission-groups').html("");
-		loadPermissions('permission-groups');
-	}
-  });
-}
-
-function deletePermission(id) {
-  var url = 'delete_permission.php';
-  $.ajax({  
-	type: "POST",  
-	url: url,  
-	data: {
-	  permission_id:		id,
-	  ajaxMode:				"true"
-	}
-  }).done( function(result) {
-	var resultJSON = processJSONResult(result);
-	alertWidget('display-alerts');
-	if (resultJSON['errors'] == 0) { 
-		// If no errors, reload the permissions list
-		$('#permission-groups').html("");
-		loadPermissions('permission-groups');
-	}
-  });		  
-}
-
 // Load permissions for the logged in user
 function userLoadPermissions() {
-	var url = 'user_load_permissions.php';
-	var result = $.ajax({  
-	  type: "GET",  
-	  url: url,
-	  async: false
-	}).responseText;
-	var resultJSON = processJSONResult(result);
-	return resultJSON;
-}
-
-// Load permissions for a specified user in admin mode
-function adminLoadPermissions(user_id) {
-	var url = 'admin_load_permissions.php';
+	var url = APIPATH + 'load_groups.php';
 	var result = $.ajax({  
 	  type: "GET",  
 	  url: url,
 	  async: false,
-	  data: {
-		user_id: user_id
-	  }
+	  data: {user_id: '0'}
 	}).responseText;
 	var resultJSON = processJSONResult(result);
 	return resultJSON;
 }
 
-function loadAllPermissions() {
-	var url = 'load_permissions.php';
+function loadAllGroups() {
+	var url = APIPATH + 'load_groups.php';
+	var result = $.ajax({  
+	  type: "GET",  
+	  url: url,
+	  async: false,
+	  data: {}
+	}).responseText;
+	var resultJSON = processJSONResult(result);
+	return resultJSON;
+}
+
+function loadSecureFunctions() {
+	var url = APIPATH + 'load_secure_functions.php';
+	var result = $.ajax({  
+	  type: "GET",  
+	  url: url,
+	  async: false,
+	  data: {}
+	}).responseText;
+	var resultJSON = processJSONResult(result);
+	return resultJSON;
+}
+
+function loadPermissionValidators() {
+	var url = APIPATH + 'load_permission_validators.php';
 	var result = $.ajax({  
 	  type: "GET",  
 	  url: url,
@@ -407,7 +400,7 @@ function loadAllPermissions() {
 }
 
 function addAlert(type, msg) {
-	var url = 'user_alerts.php';
+	var url = APIPATH + 'user_alerts.php';
 	$.ajax({  
 	  type: "POST",  
 	  url: url,
@@ -425,7 +418,7 @@ function addAlert(type, msg) {
 
 // Load alerts from $_SESSION['userAlerts'] variable into specified element
 function alertWidget(widget_id){
-	var url = 'user_alerts.php';
+	var url = APIPATH + 'user_alerts.php';
 	$.getJSON( url, {})
 	.done(function( data ) {
 		var alertHTML = "";

@@ -43,17 +43,14 @@ class userCakeMail {
 	//Function used for replacing hooks in our templates
 	public function newTemplateMsg($template,$additionalHooks)
 	{
-		global $mail_templates_dir,$debug_mode;
+		global $debug_mode;
 		
-		$this->contents = file_get_contents($mail_templates_dir.$template);
+		$this->contents = file_get_contents(MAIL_TEMPLATES.$template);
 		
 		//Check to see we can access the file / it has some contents
-		if(!$this->contents || empty($this->contents))
-		{
+		if(!$this->contents || empty($this->contents)) {
 			return false;
-		}
-		else
-		{
+		} else {
 			//Replace default hooks
 			$this->contents = replaceDefaultHook($this->contents);
 			

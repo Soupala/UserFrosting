@@ -1,7 +1,7 @@
 <?php
 /*
 
-UserFrosting Version: 0.1
+UserFrosting Version: 0.2
 By Alex Weissman
 Copyright (c) 2014
 
@@ -29,8 +29,7 @@ THE SOFTWARE.
 
 */
 
-require_once("../models/db-settings.php");
-session_start();
+require_once("config.php");
 
 ?>
 
@@ -80,7 +79,7 @@ session_start();
 		</div>
 	  </div>	
       <div class="footer">
-        <p>&copy; Your Website, 2014</p>
+        <p>&copy; UserFrosting Installer, 2014</p>
       </div>
 
     </div> <!-- /container -->

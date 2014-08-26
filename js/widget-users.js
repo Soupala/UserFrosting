@@ -69,14 +69,19 @@ function usersWidget(widget_id, options) {
 	if (options['columns'])
 		columns = options['columns'];		
 
-	console.debug(options);	
+	//console.debug(options);
+	
+	// Load the current user's info to get the CSRF token
+	var current_user = loadCurrentUser();
+	csrf_token = current_user['csrf_token'];
+	
 	// Ok, set up the widget with its columns
-	var html =
+	var html = "<input type='hidden' name='csrf_token' value='" + csrf_token + "' />" +
 	"<div class='panel panel-primary'><div class='panel-heading'><h3 class='panel-title'>" + title + "</h3></div>" +
     "<div class='panel-body'>";
 	
 	// Load the data and generate the rows.
-	var url = 'load_users.php';
+	var url = APIPATH + "load_users.php";
 	$.getJSON( url, {
 		limit: limit
 	})
@@ -149,7 +154,6 @@ function usersWidget(widget_id, options) {
 							"<span class='caret'></span><span class='sr-only'>Toggle Dropdown</span></button>" +
 							"{{{menu}}}</div></td>");
 						var formattedRowData = {};
-						formattedRowData['menu'] 
 						formattedRowData['menu'] = "<ul class='dropdown-menu' role='menu'>";
 						if (record['active'] == 0) {
 							formattedRowData['menu'] += "<li><a href='#' data-id='" + record['user_id'] +
@@ -213,13 +217,13 @@ function usersWidget(widget_id, options) {
 		widget.on('click', '.enableUser', function () {
             var btn = $(this);
             var user_id = btn.data('id');
-			updateUserEnabledStatus(user_id, true);
+			updateUserEnabledStatus(user_id, true, $("input[name='csrf_token']").val());
         });
 		
 		widget.on('click', '.disableUser', function () {
             var btn = $(this);
             var user_id = btn.data('id');
-			updateUserEnabledStatus(user_id, false);
+			updateUserEnabledStatus(user_id, false, $("input[name='csrf_token']").val());
         });		
 
 		widget.on('click', '.activateUser', function () {
@@ -238,17 +242,43 @@ function usersWidget(widget_id, options) {
 	});
 }
 
-function deleteUserDialog(dialog_id, user_id, name){
-	// First, create the dialog div
-	var parentDiv = "<div id='" + dialog_id + "' class='modal fade'></div>";
-	$( "body" ).append( parentDiv );
+function deleteUserDialog(box_id, user_id, name){
+	// Delete any existing instance of the form with the same name
+	if($('#' + box_id).length ) {
+		$('#' + box_id).remove();
+	}
 	
-	$('#' + dialog_id).load('delete_user_dialog.php', function () {
-		// Set the student_id
-		$('#' + dialog_id + ' input[name="user_id"]').val(user_id);
-		// Set the student_name
-		$('#' + dialog_id + ' .user_name').html(name);
-		$('#' + dialog_id + ' .btn-group-action .btn-confirm-delete').click(function(){
+	var data = {
+		box_id: box_id,
+		title: "Delete User",
+		message: "Are you sure you want to delete the user " + name + "?",
+		confirm: "Yes, delete user"
+	}
+	
+	// Generate the form
+	$.ajax({  
+	  type: "GET",  
+	  url: FORMSPATH + "form_confirm_delete.php",  
+	  data: data,
+	  dataType: 'json',
+	  cache: false
+	})
+	.fail(function(result) {
+		addAlert("danger", "Oops, looks like our server might have goofed.  If you're an admin, please check the PHP error logs.");
+		alertWidget('display-alerts');
+	})
+	.done(function(result) {
+		if (result['errors']) {
+			console.log("error");
+			alertWidget('display-alerts');
+			return;
+		}
+		
+		// Append the form as a modal dialog to the body
+		$( "body" ).append(result['data']);
+		$('#' + box_id).modal('show');
+		
+		$('#' + box_id + ' .btn-group-action .btn-confirm-delete').click(function(){
 			deleteUser(user_id);
 		});	
 	});
@@ -278,7 +308,7 @@ function userForm(box_id, user_id) {
 	// Generate the form
 	$.ajax({  
 	  type: "GET",  
-	  url: "load_form_user.php",  
+	  url: FORMSPATH + "form_user.php",  
 	  data: data,
 	  dataType: 'json',
 	  cache: false
@@ -298,7 +328,30 @@ function userForm(box_id, user_id) {
 		switches.data('off-label', '<i class="fa fa-times"></i>');
 		switches.bootstrapSwitch();
 		switches.bootstrapSwitch('setSizeClass', 'switch-mini' );
-	
+		
+		// Initialize primary group buttons
+		$('#' + box_id + ' .btn-toggle-primary-group').click(function() {
+			$('#' + box_id + ' .btn-toggle-primary-group-on').removeClass('btn-toggle-primary-group-on');
+			$(this).addClass('btn-toggle-primary-group-on');
+		});
+		
+		// Enable/disable primary group buttons when switch is toggled
+		switches.on('switch-change', function(event, data){
+			var el = data.el;
+			var id = el.data('id');
+			// Get corresponding primary button
+			var primary_button = $('#' + box_id + ' button.btn-toggle-primary-group[data-id="' + id + '"]');
+			// If switch is turned on, enable the corresponding button, otherwise turn off and disable it
+			if (data.value) {
+				console.log("enabling");
+				primary_button.removeClass('disabled');
+			} else {
+				console.log("disabling");
+				primary_button.removeClass('btn-toggle-primary-group-on');
+				primary_button.addClass('disabled');
+			}	
+		});
+		
 		// Link submission buttons
 		$('#' + box_id + ' form').submit(function(e){ 
 			var errorMessages = validateFormFields(box_id);
@@ -323,7 +376,7 @@ function userDisplay(box_id, user_id) {
 	// Generate the form
 	$.ajax({  
 	  type: "GET",  
-	  url: "load_form_user.php",  
+	  url: FORMSPATH + "form_user.php",  
 	  data: {
 		box_id: box_id,
 		render_mode: 'panel',
@@ -347,7 +400,7 @@ function userDisplay(box_id, user_id) {
 	.done(function(result) {
 		$('#' + box_id).html(result['data']);
 
-		// Initialize bootstrap switches
+		// Initialize bootstrap switches for user groups
 		var switches = $('#' + box_id + ' input[name="select_permissions"]');
 		switches.data('on-label', '<i class="fa fa-check"></i>');
 		switches.data('off-label', '<i class="fa fa-times"></i>');
@@ -364,11 +417,11 @@ function userDisplay(box_id, user_id) {
 		});
 		
 		$('#' + box_id + ' .btn-enable-user').click(function () {
-			updateUserEnabledStatus(user_id, true);
+			updateUserEnabledStatus(user_id, true, $('#' + box_id + ' input[name="csrf_token"]' ).val());
 		});
 		
 		$('#' + box_id + ' .btn-disable-user').click(function () {
-			updateUserEnabledStatus(user_id, false);
+			updateUserEnabledStatus(user_id, false, $('#' + box_id + ' input[name="csrf_token"]' ).val());
 		});	
 		
 		$('#' + box_id + ' .btn-delete-user').click(function() {
@@ -390,21 +443,27 @@ function createUser(dialog_id) {
 			add_permissions.push(permission_id);
 		}
 	});
-	console.log("Adding permissions: " + add_permissions.join(','));
+	//console.log("Adding user to groups: " + add_permissions.join(','));
 
+	// Set primary group
+	var primary_group_id = $('#' + dialog_id + ' button.btn-toggle-primary-group-on').data('id');
+	
 	var data = {
 		user_name: $('#' + dialog_id + ' input[name="user_name"]' ).val(),
 		display_name: $('#' + dialog_id + ' input[name="display_name"]' ).val(),
-		user_title: $('#' + dialog_id + ' input[name="user_title"]' ).val(),
+		title: $('#' + dialog_id + ' input[name="user_title"]' ).val(),
 		email: $('#' + dialog_id + ' input[name="email"]' ).val(),
-		add_permissions: add_permissions.join(','),
+		add_groups: add_permissions.join(','),
 		password: $('#' + dialog_id + ' input[name="password"]' ).val(),
 		passwordc: $('#' + dialog_id + ' input[name="passwordc"]' ).val(),
 		csrf_token: $('#' + dialog_id + ' input[name="csrf_token"]' ).val(),
+		primary_group_id: primary_group_id,
+		admin: "true",
+		skip_activation: "true",
 		ajaxMode: "true"
-	}
+	};
 	
-	var url = "create_user.php";
+	var url = APIPATH + "create_user.php";
 	$.ajax({  
 	  type: "POST",  
 	  url: url,  
@@ -441,6 +500,9 @@ function updateUser(dialog_id, user_id) {
 	console.log("Adding permissions: " + add_permissions.join(','));
 	console.log("Removing permissions: " + remove_permissions.join(','));
 	
+	// Set primary group
+	var primary_group_id = $('#' + dialog_id + ' button.btn-toggle-primary-group-on').data('id');
+	
 	var data = {
 		user_id: user_id,
 		display_name: $('#' + dialog_id + ' input[name="display_name"]' ).val(),
@@ -448,15 +510,16 @@ function updateUser(dialog_id, user_id) {
 		email: $('#' + dialog_id + ' input[name="email"]' ).val(),
 		add_permissions: add_permissions.join(','),
 		remove_permissions: remove_permissions.join(','),
+		primary_group_id: primary_group_id,
 		csrf_token: $('#' + dialog_id + ' input[name="csrf_token"]' ).val(),
 		ajaxMode:	"true"
-	}
+	};
 	
-	var url = "update_user.php";
+	var url = APIPATH + "update_user.php";
 	$.ajax({  
 	  type: "POST",  
 	  url: url,  
-	  data: data,		  
+	  data: data
 	}).done(function(result) {
 		processJSONResult(result);
 		window.location.reload();
@@ -466,9 +529,9 @@ function updateUser(dialog_id, user_id) {
 
 // Activate new user account
 function activateUser(user_id) {
-	var url = "admin_activate_user.php";
+	var url = APIPATH + "activate_user.php";
 	$.ajax({  
-	  type: "POST",  
+	  type: "GET",  
 	  url: url,  
 	  data: {
 		user_id: user_id,
@@ -482,15 +545,16 @@ function activateUser(user_id) {
 }
 
 // Enable/disable the specified user
-function updateUserEnabledStatus(user_id, enabled) {
+function updateUserEnabledStatus(user_id, enabled, csrf_token) {
 	enabled = typeof enabled !== 'undefined' ? enabled : true;
 	var data = {
 		user_id: user_id,
 		enabled: enabled,
+		csrf_token: csrf_token,
 		ajaxMode:	"true"
-	}
+	};
 	
-	url = "update_user_enabled.php";
+	url = APIPATH + "update_user.php";
 	$.ajax({  
 	  type: "POST",  
 	  url: url,  
@@ -502,7 +566,7 @@ function updateUserEnabledStatus(user_id, enabled) {
 }
 
 function deleteUser(user_id) {
-	var url = 'delete_user.php';
+	var url = APIPATH + "delete_user.php";
 	$.ajax({  
 	  type: "POST",  
 	  url: url,  

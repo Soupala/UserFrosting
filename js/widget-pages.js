@@ -2,7 +2,7 @@
 	columns
 */
 
-// Load a list of all tutors.  Available to admin only.
+// Load a list of all pages as a table, rows correspond to pages and columns to groups.
 function sitePagesWidget(widget_id, options) {
 	var widget = $('#' + widget_id);
 	var sort = "asc";
@@ -38,17 +38,17 @@ function sitePagesWidget(widget_id, options) {
 	"<div class='panel panel-primary'><div class='panel-heading'><h3 class='panel-title'>" + title + "</h3></div>" +
     "<div class='panel-body'>";
 	
-	// Load the data and generate the rows.  Load sessions by student or by tutor, depending on whether the student_id parameter is set.
-	var url = 'load_site_pages.php';
+	// Load the data and generate the rows.
+	var url = APIPATH + 'load_site_pages.php';
 	$.getJSON( url, {
 	})
 	.fail(function(result) {
 		addAlert("danger", "Oops, looks like our server might have goofed.  If you're an admin, please check the PHP error logs.");
-		alertWidget('display-alerts');
+		//alertWidget('display-alerts');
 	})
 	.done(function( result ) {
 		var data = processJSONResult(result);	
-		alertWidget('display-alerts');
+		//alertWidget('display-alerts');
 		var permissions = {};
 		// Don't bother unless there are some records found
 		if (Object.keys(data).length > 0) { 
@@ -57,12 +57,12 @@ function sitePagesWidget(widget_id, options) {
 			jQuery.each(columns, function(name, header) {
 				html += "<th>" + header + " <i class='fa fa-sort'></th>";
 			});
-			// Load list of permissions
-			permissions = loadAllPermissions();
+			// Load list of groups
+			permissions = loadAllGroups();
 			jQuery.each(permissions, function(perm_id, perm) {
 				html += "<th>" + perm['name'] + "</th>";
 			});
-			html += "</tr></thead><tbody></tbody></table>";
+			html += "</tr></thead><tbody></tbody></table></div></div></div>";
 		} else {
 			console.log("No pages found.");
 			html += "<div class='alert alert-info'>No pages found.</div>";
@@ -144,15 +144,15 @@ function sitePagesWidget(widget_id, options) {
 			var row = $(this).closest('tr');
 			var btn = $(this);
 			var page_id = btn.data('page-id');
-			var permission_id = btn.data('permission-id');
+			var group_id = btn.data('permission-id');
 			var checked = $(this).prop('checked') ? 1 : 0;
-			var url = "update_page_permission.php";
+			var url = APIPATH + "update_page_groups.php";
 			$.ajax({  
 				type: "POST",  
 				url: url,  
 				data: {
 					page_id: page_id,
-					permission_id: permission_id,
+					group_id: group_id,
 					checked: checked,
 					ajaxMode: "true"
 				},		  

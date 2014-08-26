@@ -1,7 +1,7 @@
 <?php
 /*
 
-UserFrosting Version: 0.1
+UserFrosting Version: 0.2.0
 By Alex Weissman
 Copyright (c) 2014
 
@@ -31,22 +31,23 @@ THE SOFTWARE.
 
 require_once("models/config.php");
 
-if (!securePage($_SERVER['PHP_SELF'])){
-  // Forward to 404 page
-  addAlert("danger", "Whoops, looks like you don't have permission to view that page.");
-  header("Location: 404.php");
-  exit();
-}
+// Public page
 
-setReferralPage($_SERVER['PHP_SELF']);
+setReferralPage(getAbsoluteDocumentPath(__FILE__));
 
 //Forward the user to their default page if he/she is already logged in
 if(isUserLoggedIn()) {
 	addAlert("warning", "You're already logged in!");
-	header("Location: account.php");
+	header("Location: account");
 	exit();
 }
+global $email_login;
 
+if ($email_login == 1) {
+    $user_email_placeholder = 'Username or Email';
+}else{
+    $user_email_placeholder = 'Username';
+}
 ?>
 
 <!DOCTYPE html>
@@ -92,7 +93,7 @@ if(isUserLoggedIn()) {
         <h1>Welcome to UserFrosting!</h1>
         <p class="lead">A secure, modern user management system based on UserCake, jQuery, and Bootstrap.</p>
 		<small>Please sign in here:</small>
-		<form class='form-horizontal' role='form' name='login' action='process_login.php' method='post'>
+		<form class='form-horizontal' role='form' name='login' action='api/process_login.php' method='post'>
 		  <div class="row">
 			<div id='display-alerts' class="col-lg-12">
   
@@ -100,7 +101,7 @@ if(isUserLoggedIn()) {
 		  </div>
 		  <div class="form-group">
 			<div class="col-md-offset-3 col-md-6">
-			  <input type="text" class="form-control" id="inputUserName" placeholder="Username" name = 'username' value=''>
+			  <input type="text" class="form-control" id="inputUserName" placeholder="<?php echo $user_email_placeholder; ?>" name = 'username' value=''>
 			</div>
 		  </div>
 		  <div class="form-group">
@@ -118,7 +119,7 @@ if(isUserLoggedIn()) {
 		</form>
       </div>	
       <div class="footer">
-        <p>&copy; Your Website, 2014</p>
+        <p>&copy; <a href='http://www.userfrosting.com'>UserFrosting</a>, 2014</p>
       </div>
 
     </div> <!-- /container -->
@@ -136,7 +137,7 @@ if(isUserLoggedIn()) {
 			  
 		  $("form[name='login']").submit(function(e){
 			var form = $(this);
-			var url = 'process_login.php';
+			var url = 'api/process_login.php';
 			$.ajax({  
 			  type: "POST",  
 			  url: url,  
@@ -147,10 +148,10 @@ if(isUserLoggedIn()) {
 			  },		  
 			  success: function(result) {
 				var resultJSON = processJSONResult(result);
-				if (resultJSON['errors'] > 0){
+				if (resultJSON['errors'] && resultJSON['errors'] > 0){
 				  alertWidget('display-alerts');
 				} else {
-				  window.location.replace("account.php");
+				  window.location.replace("account");
 				}
 			  }
 			});

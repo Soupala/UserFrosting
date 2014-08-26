@@ -30,19 +30,15 @@ THE SOFTWARE.
 */
 
 require_once("models/config.php");
-if (!securePage($_SERVER['PHP_SELF'])){
-  // Forward to 404 page
-  addAlert("danger", "Whoops, looks like you don't have permission to view that page.");
-  header("Location: 404.php");
-  exit();
-}
 
-setReferralPage($_SERVER['PHP_SELF']);
+// Public page
+
+setReferralPage(getAbsoluteDocumentPath(__FILE__));
 
 //Forward the user to their default page if he/she is already logged in
 if(isUserLoggedIn()) {
 	addAlert("warning", "You're already logged in!");
-    header("Location: account.php");
+    header("Location: account");
 	exit();
 }
 
@@ -99,7 +95,7 @@ if(isUserLoggedIn()) {
         </div>
       </div>	
       <div class="footer">
-        <p>&copy; Your Website, 2014</p>
+        <p>&copy; <a href='http://www.userfrosting.com'>UserFrosting</a>, 2014</p>
       </div>
 
     </div> <!-- /container -->

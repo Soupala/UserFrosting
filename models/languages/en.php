@@ -74,7 +74,7 @@ $lang = array_merge($lang,array(
 	"ACCOUNT_PASSWORD_INVALID"		=> "Current password doesn't match the one we have on record",	
 	"ACCOUNT_DETAILS_UPDATED"		=> "Account details updated",
 	"ACCOUNT_ACTIVATION_MESSAGE"		=> "You will need to activate your account before you can login. Please follow the link below to activate your account. \n\n
-	%m1%activate_account.php?token=%m2%",							
+	%m1%activate_user.php?token=%m2%",							
 	"ACCOUNT_CREATION_COMPLETE"		=> "Account for new user %m1% has been created.",
     "ACCOUNT_ACTIVATION_COMPLETE"		=> "You have successfully activated your account. You can now login.",
 	"ACCOUNT_REGISTRATION_COMPLETE_TYPE1"	=> "You have successfully registered. You can now login.",
@@ -93,9 +93,12 @@ $lang = array_merge($lang,array(
 	"ACCOUNT_MANUALLY_ACTIVATED"		=> "%m1%'s account has been manually activated",
 	"ACCOUNT_DISPLAYNAME_UPDATED"		=> "Displayname changed to %m1%",
 	"ACCOUNT_TITLE_UPDATED"			=> "%m1%'s title changed to %m2%",
-	"ACCOUNT_PERMISSION_ADDED"		=> "Added access to %m1% permission levels",
-	"ACCOUNT_PERMISSION_REMOVED"		=> "Removed access from %m1% permission levels",
-	"ACCOUNT_INVALID_USERNAME"		=> "Invalid username",
+	"ACCOUNT_GROUP_ADDED"		=> "Added user to group %m1%.",
+	"ACCOUNT_GROUP_REMOVED"		=> "Removed user from group %m1%.",
+	"ACCOUNT_GROUP_NOT_MEMBER"		=> "User is not a member of group %m1%.",
+	"ACCOUNT_GROUP_ALREADY_MEMBER"		=> "User is already a member of group %m1%.",
+    "ACCOUNT_INVALID_USERNAME"		=> "Invalid username",
+    "ACCOUNT_PRIMARY_GROUP_SET" => "Successfully set user primary group.",
 	));
 
 //Configuration
@@ -119,9 +122,11 @@ $lang = array_merge($lang,array(
 //Forgot Password
 $lang = array_merge($lang,array(
 	"FORGOTPASS_INVALID_TOKEN"		=> "Your activation token is not valid",
+    "FORGOTPASS_OLD_TOKEN"          => "Token past expiration time",
+    "FORGOTPASS_COULD_NOT_UPDATE"   => "Couldn't update password",
 	"FORGOTPASS_NEW_PASS_EMAIL"		=> "We have emailed you a new password",
 	"FORGOTPASS_REQUEST_CANNED"		=> "Lost password request cancelled",
-	"FORGOTPASS_REQUEST_EXISTS"		=> "There is already a outstanding lost password request on this account",
+	"FORGOTPASS_REQUEST_EXISTS"		=> "There is already an outstanding lost password request on this account",
 	"FORGOTPASS_REQUEST_SUCCESS"		=> "We have emailed you instructions on how to regain access to your account",
 	));
 
@@ -135,6 +140,7 @@ $lang = array_merge($lang,array(
 
 //Miscellaneous
 $lang = array_merge($lang,array(
+    "PASSWORD_HASH_FAILED"  => "Password hashing failed.  Please contact a site administrator.",
 	"NO_DATA"				=> "No data/bad data sent",
     "CAPTCHA_FAIL"				=> "Failed security question",
 	"CONFIRM"				=> "Confirm",
@@ -144,7 +150,8 @@ $lang = array_merge($lang,array(
 	"NOTHING_TO_UPDATE"			=> "Nothing to update",
 	"SQL_ERROR"				=> "Fatal SQL error",
 	"FEATURE_DISABLED"			=> "This feature is currently disabled",
-	"PAGE_PRIVATE_TOGGLED"			=> "This page is now %m1%",
+	"PAGE_INVALID_ID"              => "The requested page id does not exist",
+    "PAGE_PRIVATE_TOGGLED"			=> "This page is now %m1%",
 	"PAGE_ACCESS_REMOVED"			=> "Page access removed for %m1% permission level(s)",
 	"PAGE_ACCESS_ADDED"			=> "Page access added for %m1% permission level(s)",
     "ACCESS_DENIED" => "Hmm, looks like you don't have permission to do that.",
@@ -152,12 +159,13 @@ $lang = array_merge($lang,array(
 
 //Permissions
 $lang = array_merge($lang,array(
+    "GROUP_INVALID_ID"              => "The requested group id does not exist",
 	"PERMISSION_CHAR_LIMIT"			=> "Permission names must be between %m1% and %m2% characters in length",
 	"PERMISSION_NAME_IN_USE"		=> "Permission name %m1% is already in use",
 	"PERMISSION_DELETION_SUCCESSFUL_NAME"		=> "Successfully deleted permission '%m1%'",
     "PERMISSION_DELETIONS_SUCCESSFUL"	=> "Successfully deleted %m1% permission level(s)",
 	"PERMISSION_CREATION_SUCCESSFUL"	=> "Successfully created the permission level `%m1%`",
-	"PERMISSION_NAME_UPDATE"		=> "Permission level name changed to `%m1%`",
+	"GROUP_UPDATE"		=> "Group `%m1%` successfully updated.",
 	"PERMISSION_REMOVE_PAGES"		=> "Successfully removed access to %m1% page(s)",
 	"PERMISSION_ADD_PAGES"			=> "Successfully added access to %m1% page(s)",
 	"PERMISSION_REMOVE_USERS"		=> "Successfully removed %m1% user(s)",

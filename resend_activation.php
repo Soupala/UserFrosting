@@ -1,7 +1,7 @@
 <?php
 /*
 
-UserFrosting Version: 0.1
+UserFrosting Version: 0.2.0
 By Alex Weissman
 Copyright (c) 2014
 
@@ -30,20 +30,13 @@ THE SOFTWARE.
 */
 
 require_once("models/config.php");
-if (!securePage($_SERVER['PHP_SELF'])){
-  // Forward to 404 page
-  addAlert("danger", "Whoops, looks like you don't have permission to view that page.");
-  header("Location: 404.php");
-  exit();
-}
 
-setReferralPage($_SERVER['PHP_SELF']);
+setReferralPage(getAbsoluteDocumentPath(__FILE__));
 
 //Prevent the user visiting the logged in page if he/she is already logged in
 if(isUserLoggedIn()) {
-	addAlert("danger", "I'm sorry, you cannot register for an account while logged in.  Please log out first.");
-	header("Location: account.php");
-	exit();
+	addAlert("danger", "I'm sorry, you cannot request an activation email while logged in.  Please log out first.");
+	apiReturnError(false, SITE_ROOT);
 }
 
 ?>
@@ -90,7 +83,7 @@ if(isUserLoggedIn()) {
       <div class="jumbotron">
         <h1>Account Activation</h1>
         <p class="lead">Please enter your username and the email address you used to sign up, and an activation email will be resent.</p> 
-		<form class='form-horizontal' role='form' name='resend' action='user_resend_activation.php' method='post'>
+		<form class='form-horizontal' role='form' name='resend' action='api/user_resend_activation.php' method='post'>
 		  <div class="row">
 			<div id='display-alerts' class="col-lg-12">
   
@@ -114,7 +107,7 @@ if(isUserLoggedIn()) {
 		</form>
       </div>	
       <div class="footer">
-        <p>&copy; Your Website, 2014</p>
+        <p>&copy; <a href='http://www.userfrosting.com'>UserFrosting</a>, 2014</p>
       </div>
 
     </div> <!-- /container -->
@@ -130,7 +123,7 @@ if(isUserLoggedIn()) {
 			  
 		  	$("form[name='resend']").submit(function(e){
 				var form = $(this);
-				var url = 'user_resend_activation.php';
+				var url = APIPATH + 'user_resend_activation.php';
 				$.ajax({  
 				  type: "POST",  
 				  url: url,  
